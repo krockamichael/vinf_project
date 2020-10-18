@@ -72,10 +72,13 @@ def is_footballer(text, title) -> bool:
     return False
 
 
-def append_to_xml_tree(career_root, club_name, years, club_type):
+def append_to_xml_tree(career_root, club_name, years, club_type, player_name):
     club = ET.SubElement(career_root, 'club')
 
-    c_name = ET.SubElement(club, 'name')
+    p_name = ET.SubElement(club, 'player_name')
+    p_name.text = player_name
+
+    c_name = ET.SubElement(club, 'club_name')
     c_name.text = club_name
 
     years_ = ET.SubElement(club, 'years')
@@ -87,8 +90,6 @@ def append_to_xml_tree(career_root, club_name, years, club_type):
 
 def parse_infobox(text, title) -> ET.Element:
     career = ET.Element('career')
-    player_name_ = ET.SubElement(career, 'player_name')
-    player_name_.text = title
 
     # select infobox and remove unwanted characters
     infobox_string = re.findall(r'{{Infobox.*?\n}}', text, re.DOTALL)[-1]
@@ -99,20 +100,20 @@ def parse_infobox(text, title) -> ET.Element:
     y_clubs_list = re.findall(r'\byouthclubs\d\s*=\s*(.*?)[|\n]', infobox_string)
     y_years_list = re.findall(r'\byouthyears\d\s*=\s*(.*)\n', infobox_string)
     for youth_club, youth_year in zip(y_clubs_list, y_years_list):
-        append_to_xml_tree(career, youth_club, youth_year, 'youth')
+        append_to_xml_tree(career, youth_club, youth_year, 'youth', title)
 
     # parse senior clubs & years
     # TODO club string does not start with a letter (e.g. '-> ')
     s_clubs_list = re.findall(r'\bclubs\d\s*=\s*(.*?)[|\n]', infobox_string)
     s_years_list = re.findall(r'\byears\d\s*=\s*(.*)\n', infobox_string)
     for senior_club, senior_year in zip(s_clubs_list, s_years_list):
-        append_to_xml_tree(career, senior_club, senior_year, 'senior')
+        append_to_xml_tree(career, senior_club, senior_year, 'senior', title)
 
     # parse national clubs & years
     n_clubs_list = re.findall(r'\bnationalteam\d\s*=\s*(.*?)[|\n]', infobox_string)
     n_years_list = re.findall(r'\bnationalyears\d\s*=\s*(.*)\n', infobox_string)
     for national_club, national_year in zip(n_clubs_list, n_years_list):
-        append_to_xml_tree(career, national_club, national_year, 'senior')
+        append_to_xml_tree(career, national_club, national_year, 'senior', title)
 
     return career
 
@@ -141,22 +142,16 @@ def parse_table_senior(text, team_name, _name_1, _name_2) -> ET.Element or None:
     # select only player names
     names_list = re.findall(r'\|\s?name=(.*?)[|\n<]', squad_string)
 
-    # if they are both on the team at the same time
-    if _name_1 and _name_2 in names_list:
-        print('They played together.')
-
     # if only of them is in the team create an xml structure with the data
-    elif _name_1 in names_list:
-        career = ET.Element('career')
-        player_name_ = ET.SubElement(career, 'player_name')
-        player_name_.text = _name_1  # player name
-        append_to_xml_tree(career, team_name, '2020', 'senior')
+    if _name_1 in names_list:
+        if career is None:
+            career = ET.Element('career')
+        append_to_xml_tree(career, team_name, '2020', 'senior', _name_1)
 
-    elif _name_2 in names_list:
-        career = ET.Element('career')
-        player_name_ = ET.SubElement(career, 'player_name')
-        player_name_.text = _name_2  # player name
-        append_to_xml_tree(career, team_name, '2020', 'senior')
+    if _name_2 in names_list:
+        if career is None:
+            career = ET.Element('career')
+        append_to_xml_tree(career, team_name, '2020', 'senior', _name_2)
 
     return career
 
@@ -173,52 +168,60 @@ def get_xml_text(tree_root) -> str:
 
 
 def check_possibility(new_entry, other_player_list):
-    club_name = new_entry[0]
-    club_type = new_entry[2]
+    club_name = new_entry[1]
+    club_type = new_entry[3]
 
     year_1, year_2 = None, None
-    if '–' in new_entry[1]:
-        year_1, year_2 = re.split('–', new_entry[1])
-    elif len(new_entry[1]) == 4:
-        year_1 = new_entry[1]
-    elif new_entry[1][-1] == '-':
-        year_1 = new_entry[1][:-1]
+    if '–' in new_entry[2]:
+        year_1, year_2 = re.split('–', new_entry[2])
+    elif len(new_entry[2]) == 4:
+        year_1 = new_entry[2]
+    elif new_entry[2][-1] == '-':
+        year_1 = new_entry[2][:-1]
 
+    # x-y and a-b
     for entry in other_player_list:
-        if entry[2] == club_type:
-            if entry[0] == club_name:
-                if '–' in entry[1]:
-                    entry_year_1, entry_year_2 = re.split('–', entry[1])
+        if entry[3] == club_type:
+            if entry[1] == club_name:
+                # xxxx-yyyy
+                if '–' in entry[2] and entry[2][-1] != '–':
+                    entry_year_1, entry_year_2 = re.split('–', entry[2])
+                    # a <= x <= b
                     if int(entry_year_1) <= int(year_1) <= int(entry_year_2):
                         # TODO something better
                         print('They played together.')
+                    # x <= a <= y
                     elif int(year_1) <= int(entry_year_1) <= int(year_2):
                         print('They played together.')
-                elif len(entry[1]) == 4:
-                    entry_year_1 = entry[1]
+                # xxxx
+                elif len(entry[2]) == 4:
+                    entry_year_1 = entry[2]
+                    # a == x  OR a == y
                     if int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
                         print('They played together.')
-                    elif int(year_1) <= int(entry_year_1) <= int(year_2):
-                        print('They played together.')
-                elif entry[1][-1] == '–':
-                    entry_year_1 = entry[1][:-2]
+                    # x <= a <= y
+                    if year_2 is not None:
+                        if int(year_1) <= int(entry_year_1) <= int(year_2):
+                            print('They played together.')
+                # xxxx-
+                elif entry[2][-1] == '–':
+                    entry_year_1 = entry[2][:-1]
                     if int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
                         print('They played together.')
-                    elif int(year_1) <= int(entry_year_1) <= int(year_2):
-                        print('They played together.')
+                    if year_2 is not None:
+                        if int(year_1) <= int(entry_year_1) <= int(year_2):
+                            print('They played together.')
 
 
 def update_player_list(root_, player_list, other_player_list):
+    temp_list = list()
     for child_ in root_:
-        if child_.tag == 'club':
-            temp_list = list()
-            for g_child_ in child_:
-                temp_list.append(g_child_.text)
+        temp_list.append(child_.text)
 
-            if len(other_player_list) > 0:
-                check_possibility(temp_list, other_player_list)
-            if temp_list not in player_list:
-                player_list.append(temp_list)
+    if len(other_player_list) > 0:
+        check_possibility(temp_list, other_player_list)
+    if temp_list not in player_list:
+        player_list.append(temp_list)
 
 
 if __name__ == '__main__':
@@ -238,12 +241,12 @@ if __name__ == '__main__':
             MATCH = parse_infobox(xml_text, page_title)
             # TODO parse_text()
     elif is_top_football_club(page_title, la_liga, bundesliga, serie_a, premier_league, ligue_1):
-        MATCH = parse_table_senior(xml_text, page_title)
+        MATCH = parse_table_senior(xml_text, page_title, name_1, name_2)
         # TODO parse_table_youth()
         # TODO parse_football_squad_on_pitch()
 
 
-    name_ONE = None
+    player_ONE = None
     player_TWO = None
     list_ONE = list()
     list_TWO = list()
@@ -254,24 +257,23 @@ if __name__ == '__main__':
             # subsequent memberss are in the form of
             # club_name, years, type
 
-            if child.tag == 'player_name':
-                if name_ONE is None:
-                    name_ONE = child.text
-                    list_ONE.append(name_ONE)
-                    update_player_list(MATCH, list_ONE, list_TWO)
+            for g_child in child:
+                if g_child.tag == 'player_name':
+                    if player_ONE is None:
+                        player_ONE = g_child.text
+                        update_player_list(child, list_ONE, list_TWO)
 
-                elif player_TWO is None and name_ONE != child.text:
-                    player_TWO = child.text
-                    list_TWO.append(player_TWO)
-                    update_player_list(MATCH, list_TWO, list_ONE)
+                    elif player_TWO is None and player_ONE != g_child.text:
+                        player_TWO = g_child.text
+                        update_player_list(child, list_TWO, list_ONE)
 
-                elif name_ONE == child.text:
-                    update_player_list(MATCH, list_ONE, list_TWO)
+                    elif player_ONE == g_child.text:
+                        update_player_list(child, list_ONE, list_TWO)
 
-                elif player_TWO == child.text:
-                    update_player_list(MATCH, list_TWO, list_ONE)
-            else:
-                break
+                    elif player_TWO == g_child.text:
+                        update_player_list(child, list_TWO, list_ONE)
+                else:
+                    break
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -287,7 +289,7 @@ if __name__ == '__main__':
             MATCH = parse_infobox(xml_text, page_title)
             # TODO parse_text()
     elif is_top_football_club(page_title, la_liga, bundesliga, serie_a, premier_league, ligue_1):
-        senior_df = parse_table_senior(xml_text, page_title)
+        MATCH = parse_table_senior(xml_text, page_title, name_1, name_2)
         # TODO parse_table_youth()
         # TODO parse_football_squad_on_pitch()
 
@@ -297,24 +299,23 @@ if __name__ == '__main__':
             # subsequent memberss are in the form of
             # club_name, years, type
 
-            if child.tag == 'player_name':
-                if name_ONE is None:
-                    name_ONE = child.text
-                    list_ONE.append(name_ONE)
-                    update_player_list(MATCH, list_ONE, list_TWO)
+            for g_child in child:
+                if g_child.tag == 'player_name':
+                    if player_ONE is None:
+                        player_ONE = g_child.text
+                        update_player_list(child, list_ONE, list_TWO)
 
-                elif player_TWO is None and name_ONE != child.text:
-                    player_TWO = child.text
-                    list_TWO.append(player_TWO)
-                    update_player_list(MATCH, list_TWO, list_ONE)
+                    elif player_TWO is None and player_ONE != g_child.text:
+                        player_TWO = g_child.text
+                        update_player_list(child, list_TWO, list_ONE)
 
-                elif name_ONE == child.text:
-                    update_player_list(MATCH, list_ONE, list_TWO)
+                    elif player_ONE == g_child.text:
+                        update_player_list(child, list_ONE, list_TWO)
 
-                elif player_TWO == child.text:
-                    update_player_list(MATCH, list_TWO, list_ONE)
-            else:
-                break
+                    elif player_TWO == g_child.text:
+                        update_player_list(child, list_TWO, list_ONE)
+                else:
+                    break
 
     print('a')
 
@@ -334,12 +335,15 @@ TODO check what year --> | caption
 MATCH structure:
 
 <career>
-    <player_name>John</player_name>
     <club>
+        <player_name>ALEXANDER</player_name>
         <name>xxx</name>
         <years>yyy</years>
         <type>zzz</type>
     </club>
-    <club>...</club>
+    <club>
+        <player_name>JONATHAN</player_name>
+        ...
+    </club>
 </career>
 """

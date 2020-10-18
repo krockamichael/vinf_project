@@ -13,7 +13,6 @@ consumer = KafkaConsumer(topic,
                          value_deserializer=lambda x: ET.fromstring(x.decode('utf-8')))
 
 for message in consumer:
-    # print_all_children(message)
     page_title = get_xml_title(message.value)
     xml_text = get_xml_text(message.value)
 
