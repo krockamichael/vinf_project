@@ -9,7 +9,7 @@ producer = KafkaProducer(bootstrap_servers='localhost:9092')
 # write to pesudofile..? --> works probably, TODO DOCUMENT PROPERLY
 from io import StringIO
 
-with open('../data/playedTogether.xml', 'r', encoding='utf-8') as file:
+with open('../data/fcBarcelona.xml', 'r', encoding='utf-8') as file:
     for line in file:
         if re.search('^<.*>$', line.strip()):  # TODO, what if there's an attribute or enclosing tag
             tag = pattern.sub('', line)

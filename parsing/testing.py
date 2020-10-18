@@ -1,11 +1,10 @@
 from difflib import SequenceMatcher
 import xml.etree.ElementTree as ET
-from unidecode import unidecode
-from typing import Tuple
-import pandas as pd
-import re
 from xml.etree import ElementTree
+from unidecode import unidecode
 from xml.dom import minidom
+from typing import Tuple
+import re
 
 
 def prettify(elem):
@@ -73,6 +72,19 @@ def is_footballer(text, title) -> bool:
     return False
 
 
+def append_to_xml_tree(career_root, club_name, years, club_type):
+    club = ET.SubElement(career_root, 'club')
+
+    c_name = ET.SubElement(club, 'name')
+    c_name.text = club_name
+
+    years_ = ET.SubElement(club, 'years')
+    years_.text = years
+
+    c_type = ET.SubElement(club, 'type')
+    c_type.text = club_type
+
+
 def parse_infobox(text, title) -> ET.Element:
     career = ET.Element('career')
     player_name_ = ET.SubElement(career, 'player_name')
@@ -82,97 +94,71 @@ def parse_infobox(text, title) -> ET.Element:
     infobox_string = re.findall(r'{{Infobox.*?\n}}', text, re.DOTALL)[-1]
     for unwanted_chars in '{}[]*':
         infobox_string = infobox_string.replace(unwanted_chars, '')
-    # infobox_string = infobox_string.replace('|', ' ')
 
-    # youth, senior, national = None, None, None
-
-    # parse youth clubs and years from infoBoxString
+    # parse youth clubs & years
     y_clubs_list = re.findall(r'\byouthclubs\d\s*=\s*(.*?)[|\n]', infobox_string)
     y_years_list = re.findall(r'\byouthyears\d\s*=\s*(.*)\n', infobox_string)
-    # if len(y_clubs_list) == len(y_years_list):
-    #     youth = [[x.strip(), y.strip(), 'youth'] for x, y in zip(y_clubs_list, y_years_list)]
-    # else:
-    #     print('Error: YOUTH Club list and YOUTH Year list are not the same length.')
+    for youth_club, youth_year in zip(y_clubs_list, y_years_list):
+        append_to_xml_tree(career, youth_club, youth_year, 'youth')
 
-    for x, y in zip(y_clubs_list, y_years_list):
-        club = ET.SubElement(career, 'club')
-        name_ = ET.SubElement(club, 'name')
-        name_.text = x
-        years = ET.SubElement(club, 'years')
-        years.text = y
-        type_ = ET.SubElement(club, 'type')
-        type_.text = 'youth'
-
-    # parse senior clubs and years from infoBoxString
+    # parse senior clubs & years
     # TODO club string does not start with a letter (e.g. '-> ')
     s_clubs_list = re.findall(r'\bclubs\d\s*=\s*(.*?)[|\n]', infobox_string)
     s_years_list = re.findall(r'\byears\d\s*=\s*(.*)\n', infobox_string)
-    # if len(s_clubs_list) == len(s_years_list):
-    #     senior = [[x.strip(), y.strip(), 'senior'] for x, y in zip(s_clubs_list, s_years_list)]
-    # else:
-    #     print('Error: SENIOR Club list and SENIOR Year list are not the same length.')
+    for senior_club, senior_year in zip(s_clubs_list, s_years_list):
+        append_to_xml_tree(career, senior_club, senior_year, 'senior')
 
-    for x, y in zip(s_clubs_list, s_years_list):
-        club = ET.SubElement(career, 'club')
-        name_ = ET.SubElement(club, 'name')
-        name_.text = x
-        years = ET.SubElement(club, 'years')
-        years.text = y
-        type_ = ET.SubElement(club, 'type')
-        type_.text = 'senior'
-
-    # parse national clubs and years from infoBoxString
+    # parse national clubs & years
     n_clubs_list = re.findall(r'\bnationalteam\d\s*=\s*(.*?)[|\n]', infobox_string)
     n_years_list = re.findall(r'\bnationalyears\d\s*=\s*(.*)\n', infobox_string)
-    # if len(n_clubs_list) == len(n_years_list):
-    #     national = [[x.strip(), y.strip(), 'national'] for x, y in zip(n_clubs_list, n_years_list)]
-    # else:
-    #     print('Error: NATIONAL Club list and NATIONAL Year list are not the same length.')
-
-    for x, y in zip(n_clubs_list, n_years_list):
-        club = ET.SubElement(career, 'club')
-        name_ = ET.SubElement(club, 'name')
-        name_.text = x
-        years = ET.SubElement(club, 'years')
-        years.text = y
-        type_ = ET.SubElement(club, 'type')
-        type_.text = 'national'
-
-    # insert data into a dataframe
-    # infobox_dataframe = pd.DataFrame(data=(youth + senior + national), columns=['Team', 'Years', 'Type'])
+    for national_club, national_year in zip(n_clubs_list, n_years_list):
+        append_to_xml_tree(career, national_club, national_year, 'senior')
 
     return career
 
 
-def parse_football_squad(text) -> str or None:
+def parse_team_squad_text(text) -> str or None:
     if re.search(r'start', text, re.DOTALL):
         return re.findall(r'start(.*)end', text, re.DOTALL)[0]
     return None
 
 
-def parse_table_senior(text, team_name) -> pd.DataFrame:
+def parse_table_senior(text, team_name, _name_1, _name_2) -> ET.Element or None:
     squad_string = None
+    career = None
 
-    # select current team
+    # select current senior team
     squad_list = re.findall(r'[Ss]quad\s*={2,3}(.*?)={2,3}', text, re.DOTALL)
     if squad_list:
-        squad_string = parse_football_squad(max(squad_list, key=len))
+        squad_string = parse_team_squad_text(max(squad_list, key=len))
     if squad_string is None:
         squad_list = re.findall(r'[Ff]irst\steam\s*={2,3}(.*?)={2,3}', text, re.DOTALL)
-        squad_string = parse_football_squad(max(squad_list, key=len))
+        squad_string = parse_team_squad_text(max(squad_list, key=len))
 
     for unwanted_chars in '{}[]*':
         squad_string = squad_string.replace(unwanted_chars, '')
 
     # select only player names
     names_list = re.findall(r'\|\s?name=(.*?)[|\n<]', squad_string)
-    club_name_list = [team_name for x in range(len(names_list))]
-    senior_list = ['senior' for x in range(len(names_list))]
 
-    # insert data into a dataframe
-    senior_dataframe = pd.DataFrame(data=zip(names_list, club_name_list, senior_list), columns=['Name', 'Club', 'Type'])
+    # if they are both on the team at the same time
+    if _name_1 and _name_2 in names_list:
+        print('They played together.')
 
-    return senior_dataframe
+    # if only of them is in the team create an xml structure with the data
+    elif _name_1 in names_list:
+        career = ET.Element('career')
+        player_name_ = ET.SubElement(career, 'player_name')
+        player_name_.text = _name_1  # player name
+        append_to_xml_tree(career, team_name, '2020', 'senior')
+
+    elif _name_2 in names_list:
+        career = ET.Element('career')
+        player_name_ = ET.SubElement(career, 'player_name')
+        player_name_.text = _name_2  # player name
+        append_to_xml_tree(career, team_name, '2020', 'senior')
+
+    return career
 
 
 def get_xml_title(tree_root) -> str:
@@ -195,8 +181,8 @@ def check_possibility(new_entry, other_player_list):
         year_1, year_2 = re.split('–', new_entry[1])
     elif len(new_entry[1]) == 4:
         year_1 = new_entry[1]
-    elif new_entry[1][-1] == '–':
-        year_1 = new_entry[1][:-2]
+    elif new_entry[1][-1] == '-':
+        year_1 = new_entry[1][:-1]
 
     for entry in other_player_list:
         if entry[2] == club_type:
@@ -237,14 +223,14 @@ def update_player_list(root_, player_list, other_player_list):
 
 if __name__ == '__main__':
     # parse into a tree structure using xml parser
-    root = ET.fromstring(open('../data/frankLampard.xml', 'r', encoding='utf-8').read())
+    root = ET.fromstring(open('../data/fcBarcelona.xml', 'r', encoding='utf-8').read())
     page_title = get_xml_title(root)
     xml_text = get_xml_text(root)
 
     # TODO temp names
     MATCH = None
-    name_1 = 'Frank Lampard'
-    name_2 = 'Michael Essien'
+    name_1 = 'Lionel Messi'
+    name_2 = 'Philippe Coutinho'
     la_liga, bundesliga, serie_a, premier_league, ligue_1 = load_top_football_clubs()
 
     if is_footballer_name(name_1, name_2, page_title):
@@ -252,10 +238,7 @@ if __name__ == '__main__':
             MATCH = parse_infobox(xml_text, page_title)
             # TODO parse_text()
     elif is_top_football_club(page_title, la_liga, bundesliga, serie_a, premier_league, ligue_1):
-        senior_df = parse_table_senior(xml_text, page_title)
-        for player_name in senior_df['Name']:
-            if is_footballer_name(name_1, name_2, player_name):
-                MATCH = (player_name, page_title)
+        MATCH = parse_table_senior(xml_text, page_title)
         # TODO parse_table_youth()
         # TODO parse_football_squad_on_pitch()
 
@@ -290,16 +273,14 @@ if __name__ == '__main__':
             else:
                 break
 
+# ----------------------------------------------------------------------------------------------------------------------
+
     # parse into a tree structure using xml parser
     root = ET.fromstring(open('../data/michaelEssien.xml', 'r', encoding='utf-8').read())
     page_title = get_xml_title(root)
     xml_text = get_xml_text(root)
 
-    # TODO temp names
     MATCH = None
-    name_1 = 'Frank Lampard'
-    name_2 = 'Michael Essien'
-    la_liga, bundesliga, serie_a, premier_league, ligue_1 = load_top_football_clubs()
 
     if is_footballer_name(name_1, name_2, page_title):
         if is_footballer(xml_text, page_title):
@@ -307,9 +288,6 @@ if __name__ == '__main__':
             # TODO parse_text()
     elif is_top_football_club(page_title, la_liga, bundesliga, serie_a, premier_league, ligue_1):
         senior_df = parse_table_senior(xml_text, page_title)
-        for player_name in senior_df['Name']:
-            if is_footballer_name(name_1, name_2, player_name):
-                MATCH = (player_name, page_title)
         # TODO parse_table_youth()
         # TODO parse_football_squad_on_pitch()
 

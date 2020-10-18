@@ -19,8 +19,8 @@ for message in consumer:
 
     # TODO temp names
     MATCH = None
-    name_1 = 'Frank Lampard'
-    name_2 = 'Michael Essien'
+    name_1 = 'Lionel Messi'
+    name_2 = 'Philippe Coutinho'
     la_liga, bundesliga, serie_a, premier_league, ligue_1 = load_top_football_clubs()
 
     if is_footballer_name(name_1, name_2, page_title):
@@ -28,12 +28,7 @@ for message in consumer:
             MATCH = parse_infobox(xml_text, page_title)
             # TODO parse_text()
     elif is_top_football_club(page_title, la_liga, bundesliga, serie_a, premier_league, ligue_1):
-        senior_df = parse_table_senior(xml_text, page_title)
-        for name in senior_df['Name']:
-            if is_footballer_name(name_1, name_2, name):
-                # MATCH = (name, page_title)
-                # TODO parse name into single XML
-                print('a')
+        MATCH = parse_table_senior(xml_text, page_title, name_1, name_2)
         # TODO parse_table_youth()
         # TODO parse_football_squad_on_pitch()
 
