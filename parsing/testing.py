@@ -176,13 +176,13 @@ def parse_table_senior(text, team_name) -> pd.DataFrame:
 
 
 def get_xml_title(tree_root) -> str:
-    return [child.text for child in tree_root if child.tag == 'title'][0]
+    return [child_.text for child_ in tree_root if child_.tag == 'title'][0]
 
 
 def get_xml_text(tree_root) -> str:
     return [grandchild.text
-            for child in tree_root
-            for grandchild in child
+            for child_ in tree_root
+            for grandchild in child_
             if grandchild.tag == 'text'][0]
 
 
