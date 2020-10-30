@@ -1,5 +1,5 @@
 from parsing.text_parsing import *
-from parsing.wrappers import get_xml_title, get_xml_text
+from parsing.wrappers import get_xml_title, get_xml_text, write_to_xml_file
 import xml.etree.ElementTree as ET
 from io import StringIO
 from time import time
@@ -50,6 +50,24 @@ def main_test(path, player_1, player_2, list_1, list_2):
                     break
 """
 
+
+def main_parsing_logic(file_str_, output_file_):
+    # we have one page in file_str_
+    root_ = ET.fromstring(file_str_.getvalue().encode('utf-8'))
+    page_title_ = get_xml_title(root_)
+    xml_text_ = get_xml_text(root_)
+    if xml_text_ is None:
+        return
+
+    if is_football_player(xml_text_, page_title_):
+        infobox = parse_infobox(xml_text_, page_title_)
+        write_to_xml_file(infobox, output_file_)
+
+    elif is_football_club(xml_text_):
+        table = parse_table_senior(xml_text_, page_title_)
+        write_to_xml_file(table, output_file_)
+
+
 if __name__ == '__main__':
     """for main_test()"""
     # name_1 = 'Lionel Messi'
@@ -70,32 +88,26 @@ if __name__ == '__main__':
     # print(root.attrib['name'])
 
     start_time = time()
+    path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF\Projekt/result.xml'
 
-    with open('C:/Users/krock/Desktop/FIIT/Inžinier/1. Semester/VINF/Projekt/result.xml', 'r', encoding='utf-8') as file:
+    with open(path, 'r', encoding='utf-8') as file:
         for line in file:
             start_tag = re.findall(r'<(.*?)\s*>', line)
-            if start_tag:  # TODO, what if there's an enclosing tag <PAGES><page>...</page><page>...</page></PAGES>
+            if start_tag and start_tag[0] != 'pages':
                 start_tag = start_tag[0]
                 file_str = StringIO()
                 file_str.write(line)
 
-                for line_s in file:
-                    end_tag = re.findall(r'</(.*?)\s*>', line_s)
-                    if end_tag and end_tag[0] == start_tag:
-                        file_str.write(line_s)
+                for page_content_line in file:
+                    end_tag = re.findall(r'</(.*?)\s*>', page_content_line)
+                    if end_tag and end_tag[0] == start_tag:     # closing tag
+                        file_str.write(page_content_line)
                         break
-                    file_str.write(line_s)
+                    file_str.write(page_content_line)
 
             # we have one page in file_str
-            root = ET.fromstring(file_str.getvalue().encode('utf-8'))
-            page_title = get_xml_title(root)
-            xml_text = get_xml_text(root)
-            if xml_text is None:
-                continue
+            output_file = '../data/balsjdbsajbdasdkj.xml'    # TODO
+            with open(output_file, 'a', encoding='utf-8') as out_file:
+                main_parsing_logic(file_str, output_file)
 
-            if is_football_player(xml_text, page_title):
-                parse_infobox(xml_text, page_title)
-
-            elif is_football_club(xml_text):
-                parse_table_senior(xml_text, page_title)
     print(time() - start_time)

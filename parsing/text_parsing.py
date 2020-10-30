@@ -1,4 +1,4 @@
-from parsing.wrappers import player_xml_tree, club_xml_tree, prettify
+from parsing.wrappers import player_xml_tree, club_xml_tree
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
 from difflib import SequenceMatcher
@@ -8,31 +8,31 @@ import regex
 import re
 
 
-def load_top_football_clubs() -> Tuple[list, list, list, list, list]:
-    with open('../data/TopLeagueTeamNames.txt', 'r', encoding='utf-8') as f:
-        # file format: league name, club names, empty line
-        f.readline()    # ignore league name
-        la_liga_ = [next(f).strip() for x in range(20)]
-        f.readline(), f.readline()  # ignore league name and empty line
-        bundesliga_ = [next(f).strip() for x in range(18)]
-        f.readline(), f.readline()
-        serie_a_ = [next(f).strip() for x in range(20)]
-        f.readline(), f.readline()
-        premier_league_ = [next(f).strip() for x in range(20)]
-        f.readline(), f.readline()
-        ligue_1_ = [next(f).strip() for x in range(20)]
+# def load_top_football_clubs() -> Tuple[list, list, list, list, list]:
+#     with open('../data/TopLeagueTeamNames.txt', 'r', encoding='utf-8') as f:
+#         # file format: league name, club names, empty line
+#         f.readline()    # ignore league name
+#         la_liga_ = [next(f).strip() for x in range(20)]
+#         f.readline(), f.readline()  # ignore league name and empty line
+#         bundesliga_ = [next(f).strip() for x in range(18)]
+#         f.readline(), f.readline()
+#         serie_a_ = [next(f).strip() for x in range(20)]
+#         f.readline(), f.readline()
+#         premier_league_ = [next(f).strip() for x in range(20)]
+#         f.readline(), f.readline()
+#         ligue_1_ = [next(f).strip() for x in range(20)]
+#
+#     return la_liga_, bundesliga_, serie_a_, premier_league_, ligue_1_
 
-    return la_liga_, bundesliga_, serie_a_, premier_league_, ligue_1_
 
-
-def is_top_football_club(title, La_Liga=None, Bundesliga=None, Serie_A=None, Premier_League=None, Ligue_1=None) -> bool:
-    if not all(v is not None for v in [La_Liga, Bundesliga, Serie_A, Premier_League, Ligue_1]):
-        La_Liga, Bundesliga, Serie_A, Premier_League, Ligue_1 = load_top_football_clubs()
-
-    if [x for x in (La_Liga, Bundesliga, Serie_A, Premier_League, Ligue_1) if title in x]:
-        return True
-    else:
-        return False
+# def is_top_football_club(title, La_Liga=None, Bundesliga=None, Serie_A=None, Premier_League=None, Ligue_1=None) -> bool:
+#     if not all(v is not None for v in [La_Liga, Bundesliga, Serie_A, Premier_League, Ligue_1]):
+#         La_Liga, Bundesliga, Serie_A, Premier_League, Ligue_1 = load_top_football_clubs()
+#
+#     if [x for x in (La_Liga, Bundesliga, Serie_A, Premier_League, Ligue_1) if title in x]:
+#         return True
+#     else:
+#         return False
 
 
 def is_footballer_name(name1, name2, title) -> bool:
@@ -73,25 +73,21 @@ def is_football_player(text, title) -> bool:
 def is_football_club(text) -> bool:
     # check data in short description
     short_summary_string = regex.search(r'(?=\{[sS]hort\sdescription)(\{([^{}]|(?1))*\})', text)
-    if short_summary_string is not None:
-        short_summary_string = short_summary_string[0].lower()
-
-        if 'football' in short_summary_string:
-            if 'club' in short_summary_string or 'team' in short_summary_string:
-                return True
 
     # check data in infobox
     infobox_string = regex.search(r'(?=\{Infobox)(\{([^{}]|(?1))*\})', text)
-    if infobox_string is not None:
-        infobox_string = infobox_string[0][:40]
-        if 'football' in infobox_string:
-            if 'club' in infobox_string or 'team' in infobox_string:
-                return True
+
+    for item in (short_summary_string, infobox_string):     # TODO does this work?
+        if item is not None:
+            item = item[0][:60].lower()
+            if 'football' in item:
+                if 'club' in item or 'team' in item:
+                    return True
 
     return False
 
 
-def parse_infobox(text, title):
+def parse_infobox(text, title) -> Element or None:
     player = Element('player')
     player.set('name', title)
 
@@ -127,9 +123,7 @@ def parse_infobox(text, title):
         # append_to_xml_tree_Club_PName_CName_Years_Type(career, national_club, national_year, 'senior', title)
         player_xml_tree(player, national_club, national_year.replace('–', '-'), 'national')
 
-    with open('../data/temp.xml', 'a', encoding='utf-8') as out_file:
-        ET.canonicalize(prettify(player), out=out_file)
-        out_file.write('\n')
+    return player
 
 
 def parse_team_squad_text(text) -> str or None:
@@ -138,7 +132,7 @@ def parse_team_squad_text(text) -> str or None:
     return None
 
 
-def parse_table_senior(text, team_name):
+def parse_table_senior(text, team_name) -> Element or None:
     squad_string = None
     club = Element('club')
     club.set('name', team_name)
@@ -165,9 +159,7 @@ def parse_table_senior(text, team_name):
     names_list = re.findall(r'\|\s?name=\[\[(.*?)[\]\]|\n<]', squad_string)
     club_xml_tree(club, 'senior', '2020', names_list)
 
-    with open('../data/temp.xml', 'a', encoding='utf-8') as out_file:
-        ET.canonicalize(prettify(club), out=out_file)
-        out_file.write('\n')
+    return club
 
 
 """

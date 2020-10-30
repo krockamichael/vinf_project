@@ -21,6 +21,11 @@ def prettify(elem) -> str:
     return reparsed.toprettyxml(indent="  ")
 
 
+def write_to_xml_file(element, output_file):
+    ET.canonicalize(prettify(element), out=output_file)
+    output_file.write('\n')
+
+
 def append_to_xml_tree_Club_PName_CName_Years_Type(career_root, club_name, years, club_type, player_name):
     club = SubElement(career_root, 'club')
 
