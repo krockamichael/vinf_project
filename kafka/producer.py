@@ -3,15 +3,15 @@ from time import sleep
 import re
 
 pattern = re.compile('[\W_]')
-topic = 'vinf'  # or test
+topic = 'vinf'
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
 
-# write to pesudofile..? --> works probably, TODO DOCUMENT PROPERLY
+# write to pesudofile --> works TODO DOCUMENT PROPERLY
 from io import StringIO
 
 with open('../data/fcBarcelona.xml', 'r', encoding='utf-8') as file:
     for line in file:
-        if re.search('^<.*>$', line.strip()):  # TODO, what if there's an attribute or enclosing tag
+        if re.search('^<.*>$', line.strip()):  # TODO, what if there's an attribute or enclosing tag <PAGES><page>...</page><page>...</page></PAGES>
             tag = pattern.sub('', line)
             file_str = StringIO()
             file_str.write(line)

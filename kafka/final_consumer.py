@@ -1,6 +1,6 @@
 from kafka import KafkaConsumer
 import xml.etree.ElementTree as ET
-from parsing.testing import update_player_list
+from parsing.text_parsing import update_player_list
 
 
 final_topic = 'final_topic'

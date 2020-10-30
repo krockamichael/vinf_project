@@ -1,4 +1,4 @@
-from parsing.testing import parse_table_senior, is_top_football_club
+from parsing.text_parsing import parse_table_senior, is_top_football_club
 import xml.etree.ElementTree as ET
 
 

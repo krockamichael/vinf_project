@@ -1,5 +1,5 @@
 import re
-from parsing.testing import load_top_football_clubs
+from parsing.text_parsing import load_top_football_clubs
 
 source = '../data/result.xml'
 target = '../data/only_teams.xml'

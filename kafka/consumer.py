@@ -1,7 +1,9 @@
 from kafka import KafkaConsumer, KafkaProducer
-from parsing.testing import *
+from parsing.text_parsing import *
+from parsing.wrappers import get_xml_title, get_xml_text
+import xml.etree.ElementTree as ET
 
-topic = 'vinf'  # or test
+topic = 'vinf'
 final_topic = 'final_topic'
 consumer = KafkaConsumer(topic,
                          group_id='abc',
