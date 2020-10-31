@@ -1,27 +1,26 @@
 from kafka import KafkaProducer
-from time import sleep
+from io import StringIO
 import re
 
-pattern = re.compile('[\W_]')
 topic = 'vinf'
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
+path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF/Projekt/result.xml'
 
-# write to pesudofile --> works TODO DOCUMENT PROPERLY
-from io import StringIO
-
-with open('../data/fcBarcelona.xml', 'r', encoding='utf-8') as file:
+with open(path, 'r', encoding='utf-8') as file:
     for line in file:
-        if re.search('^<.*>$', line.strip()):  # TODO, what if there's an attribute or enclosing tag <PAGES><page>...</page><page>...</page></PAGES>
-            tag = pattern.sub('', line)
-            file_str = StringIO()
-            file_str.write(line)
-            for line_s in file:
-                if re.search('^</.*>$', line_s.strip()) and pattern.sub('', line_s) == tag:  # TODO, what if there's an attribute
-                    file_str.write(line_s)
+        start_tag = re.findall(r'<(.*?)\s*>', line)
+        if start_tag and start_tag[0] == 'page':       # TODO better solution for encapsulating tag
+            start_tag = start_tag[0]
+            file_strio = StringIO()
+            file_strio.write(line)
+
+            for page_content_line in file:
+                end_tag = re.findall(r'</(.*?)\s*>', page_content_line)
+                if end_tag and end_tag[0] == start_tag:
+                    file_strio.write(page_content_line)
                     try:
-                        producer.send(topic=topic, value=file_str.getvalue().encode('utf-8'))
-                        sleep(10)
+                        producer.send(topic=topic, value=file_strio.getvalue().encode('utf-8'))
                     except Exception as e:
                         print(e)
                     break
-                file_str.write(line_s)
+                file_strio.write(page_content_line)

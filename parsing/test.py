@@ -1,8 +1,7 @@
 from parsing.text_parsing import *
-from parsing.wrappers import get_xml_title, get_xml_text, write_to_xml_file
+from parsing.wrappers import get_xml_title, get_xml_text, update_player_list, check_possibility
 import xml.etree.ElementTree as ET
 from io import StringIO
-from time import time
 import re
 
 """
@@ -51,7 +50,7 @@ def main_test(path, player_1, player_2, list_1, list_2):
 """
 
 
-def main_parsing_logic(file_str_, output_file_):
+def main_parsing_logic(file_str_: StringIO) -> Element or None:
     # we have one page in file_str_
     root_ = ET.fromstring(file_str_.getvalue().encode('utf-8'))
     page_title_ = get_xml_title(root_)
@@ -60,12 +59,11 @@ def main_parsing_logic(file_str_, output_file_):
         return
 
     if is_football_player(xml_text_, page_title_):
-        infobox = parse_infobox(xml_text_, page_title_)
-        write_to_xml_file(infobox, output_file_)
+        return parse_infobox(xml_text_, page_title_)
 
     elif is_football_club(xml_text_):
-        table = parse_table_senior(xml_text_, page_title_)
-        write_to_xml_file(table, output_file_)
+        return parse_table_senior(xml_text_, page_title_)
+
 
 
 if __name__ == '__main__':
@@ -84,30 +82,103 @@ if __name__ == '__main__':
     # main_test('../data/fcBarcelona.xml', player_ONE, player_TWO, list_ONE, list_TWO)
 
     """how to get attribute value"""
-    # root = ET.parse('../data/temp.xml').getroot()
+    # root = ET.parse('../data/final_xml_RESULT.xml').getroot()
     # print(root.attrib['name'])
 
-    start_time = time()
-    path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF\Projekt/result.xml'
+    """parse 'result' file into final xml file"""
+    # start_time = time()
+    # path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF/Projekt/result.xml'
+    # with open(path, 'r', encoding='utf-8') as file:
+    #     for line in file:
+    #         start_tag = re.findall(r'<(.*?)\s*>', line)
+    #         if start_tag and start_tag[0] != 'pages':
+    #             start_tag = start_tag[0]
+    #             file_strio = StringIO()
+    #             file_strio.write(line)
+    #
+    #             for page_content_line in file:
+    #                 end_tag = re.findall(r'</(.*?)\s*>', page_content_line)
+    #                 if end_tag and end_tag[0] == start_tag:     # closing tag
+    #                     file_strio.write(page_content_line)
+    #                     break
+    #                 file_strio.write(page_content_line)
+    #
+    #         # we have one page in file_str
+    #         out_path = '../data/final_xml_RESULT.xml'
+    #         with open(out_path, 'a', encoding='utf-8') as out_file:
+    #             result = main_parsing_logic(file_strio)
+    #             if result is not None:
+    #                 out_file.writelines(prettify(xml_string=ET.tostring(result, encoding='utf-8'))[23:-1])
+    #                 out_file.write('\n')
+    #
+    # print(time() - start_time)
+
+    """read final input file and check if players played together"""
+
+    player_ONE = 'Lionel Messi'
+    player_TWO = 'Philippe Coutinho'
+    list_ONE = list()
+    list_TWO = list()
+
+    path = '../data/final_xml_ENWIKI.xml'
 
     with open(path, 'r', encoding='utf-8') as file:
         for line in file:
-            start_tag = re.findall(r'<(.*?)\s*>', line)
-            if start_tag and start_tag[0] != 'pages':
+            self_enclosed_tag = re.findall(r'<(.*?)/>', line)
+            if len(self_enclosed_tag) > 0:
+                continue
+
+            start_tag = re.findall(r'<(.*?)\s', line)
+            if start_tag:  # TODO solution for encapsulating tag
                 start_tag = start_tag[0]
-                file_str = StringIO()
-                file_str.write(line)
+                file_strio = StringIO()
+                file_strio.write(line)
 
                 for page_content_line in file:
                     end_tag = re.findall(r'</(.*?)\s*>', page_content_line)
-                    if end_tag and end_tag[0] == start_tag:     # closing tag
-                        file_str.write(page_content_line)
+                    if end_tag and end_tag[0] == start_tag:
+                        file_strio.write(page_content_line)
+
+                        ### LOGIC START ###
+                        root = ET.fromstring(file_strio.getvalue().strip())
+
+                        # create list where first member is player name
+                        # subsequent memberss are in the form of
+                        # list member form: club_type, club_name, years
+                        if root.tag == 'club':
+                            club_name = root.attrib['name']
+                            for child in root:
+                                for g_child in child:
+                                    if g_child.text == player_ONE:
+                                        temp_list = list()
+                                        temp_list.append(child.tag)  # youth / senior / national
+                                        temp_list.append(club_name)  # club name
+                                        temp_list.append(child.attrib['year'])  # club years
+                                        if temp_list not in list_ONE:
+                                            list_ONE.append(temp_list)
+                                            if len(list_TWO) > 0:
+                                                check_possibility(temp_list, list_TWO)
+
+                                    elif g_child.text == player_TWO:
+                                        temp_list = list()
+                                        temp_list.append(child.tag)  # youth / senior / national
+                                        temp_list.append(club_name)  # club name
+                                        temp_list.append(child.attrib['year'])  # club years
+                                        if temp_list not in list_TWO:
+                                            list_TWO.append(temp_list)
+                                            if len(list_ONE) > 0:
+                                                check_possibility(temp_list, list_ONE)
+
+                        # PLAYER
+                        elif root.tag == 'player':
+                            # first player
+                            if root.attrib['name'] == player_ONE:
+                                for child in root:  # child --> youth / senior / national
+                                    update_player_list(child, list_ONE, list_TWO)
+                            # second player
+                            elif root.attrib['name'] == player_TWO:
+                                for child in root:  # child --> youth / senior / national
+                                    update_player_list(child, list_TWO, list_ONE)
+                        ### LOGIC END ###
                         break
-                    file_str.write(page_content_line)
-
-            # we have one page in file_str
-            output_file = '../data/balsjdbsajbdasdkj.xml'    # TODO
-            with open(output_file, 'a', encoding='utf-8') as out_file:
-                main_parsing_logic(file_str, output_file)
-
-    print(time() - start_time)
+                    file_strio.write(page_content_line)

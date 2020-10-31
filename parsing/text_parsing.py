@@ -77,9 +77,9 @@ def is_football_club(text) -> bool:
     # check data in infobox
     infobox_string = regex.search(r'(?=\{Infobox)(\{([^{}]|(?1))*\})', text)
 
-    for item in (short_summary_string, infobox_string):     # TODO does this work?
+    for item in (short_summary_string, infobox_string):
         if item is not None:
-            item = item[0][:60].lower()
+            item = item[0][:70].lower()
             if 'football' in item:
                 if 'club' in item or 'team' in item:
                     return True
@@ -105,22 +105,19 @@ def parse_infobox(text, title) -> Element or None:
     y_clubs_list = re.findall(r'\byouthclubs\d\s*=\s*(.*?)[|\n]', infobox_string)
     y_years_list = re.findall(r'\byouthyears\d\s*=\s*(.*?)\s*[|\n]', infobox_string)
     for youth_club, youth_year in zip(y_clubs_list, y_years_list):
-        # append_to_xml_tree_Club_PName_CName_Years_Type(career, youth_club, youth_year, 'youth', title)
         player_xml_tree(player, youth_club, youth_year.replace('–', '-'), 'youth')
 
     # parse senior clubs & years
-    # TODO club string does not start with a letter (e.g. '-> ')
+    # strip '-> ' loan signs
     s_clubs_list = re.findall(r'\bclubs\d\s*=\s*(.*?)[|\n]', infobox_string)
     s_years_list = re.findall(r'\byears\d\s*=\s*(.*?)\s*[|\n]', infobox_string)
     for senior_club, senior_year in zip(s_clubs_list, s_years_list):
-        # append_to_xml_tree_Club_PName_CName_Years_Type(career, senior_club, senior_year, 'senior', title)
-        player_xml_tree(player, senior_club, senior_year.replace('–', '-'), 'senior')
+        player_xml_tree(player, senior_club.strip('→ '), senior_year.replace('–', '-'), 'senior')
 
     # parse national clubs & years
     n_clubs_list = re.findall(r'\bnationalteam\d\s*=\s*(.*?)[|\n]', infobox_string)
     n_years_list = re.findall(r'\bnationalyears\d\s*=\s*(.*?)\s*[|\n]', infobox_string)
     for national_club, national_year in zip(n_clubs_list, n_years_list):
-        # append_to_xml_tree_Club_PName_CName_Years_Type(career, national_club, national_year, 'senior', title)
         player_xml_tree(player, national_club, national_year.replace('–', '-'), 'national')
 
     return player
