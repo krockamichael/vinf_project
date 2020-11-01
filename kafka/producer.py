@@ -2,6 +2,9 @@ from kafka import KafkaProducer
 from io import StringIO
 import re
 
+# TODO parse_table_youth()
+# TODO parse_football_squad_on_pitch()
+
 topic = 'vinf'
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
 path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF/Projekt/result.xml'

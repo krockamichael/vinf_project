@@ -152,9 +152,14 @@ def parse_table_senior(text, team_name) -> Element or None:
         squad_string = squad_string.replace(unwanted_chars, '')
 
     # select only player names
-    # TODO can be 'national' as well
     names_list = re.findall(r'\|\s?name=\[\[(.*?)[\]\]|\n<]', squad_string)
-    club_xml_tree(club, 'senior', '2020', names_list)
+
+    # decide club type, default senior
+    club_type = 'senior'
+    if 'national' in team_name:
+        club_type = 'national'
+
+    club_xml_tree(club, club_type, '2020', names_list)
 
     return club
 
