@@ -9,7 +9,7 @@ import re
 
 
 # def load_top_football_clubs() -> Tuple[list, list, list, list, list]:
-#     with open('../data/TopLeagueTeamNames.txt', 'r', encoding='utf-8') as f:
+#     with open('../data/top_team_names.txt', 'r', encoding='utf-8') as f:
 #         # file format: league name, club names, empty line
 #         f.readline()    # ignore league name
 #         la_liga_ = [next(f).strip() for x in range(20)]

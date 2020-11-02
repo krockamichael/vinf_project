@@ -79,7 +79,7 @@ if __name__ == '__main__':
     # la_liga, bundesliga, serie_a, premier_league, ligue_1 = load_top_football_clubs()
     #
     # main_test('../data/michaelEssien.xml', player_ONE, player_TWO, list_ONE, list_TWO)
-    # main_test('../data/club_example_page.xml', player_ONE, player_TWO, list_ONE, list_TWO)
+    # main_test('../data/example_club_page.xml', player_ONE, player_TWO, list_ONE, list_TWO)
 
     """how to get attribute value"""
     # root = ET.parse('../data/final_xml_RESULT.xml').getroot()

@@ -2,7 +2,6 @@ from kafka import KafkaProducer
 from io import StringIO
 import re
 
-
 topic = 'vinf'
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
 
