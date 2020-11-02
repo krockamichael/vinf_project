@@ -69,7 +69,6 @@ def is_football_player(text, title) -> bool:
     return False
 
 
-# TODO national team --> 'Chad national football team'
 def is_football_club(text) -> bool:
     # check data in short description
     short_summary_string = regex.search(r'(?=\{[sS]hort\sdescription)(\{([^{}]|(?1))*\})', text)
@@ -82,7 +81,8 @@ def is_football_club(text) -> bool:
             item = item[0][:70].lower()
             if 'football' in item:
                 if 'club' in item or 'team' in item:
-                    return True
+                    if 'american football' not in item:     # todo better?
+                        return True
 
     return False
 

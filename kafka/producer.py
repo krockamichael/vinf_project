@@ -2,17 +2,16 @@ from kafka import KafkaProducer
 from io import StringIO
 import re
 
-# TODO parse_table_youth()
-# TODO parse_football_squad_on_pitch()
 
 topic = 'vinf'
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
+
 path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF/Projekt/result.xml'
 
 with open(path, 'r', encoding='utf-8') as file:
     for line in file:
         start_tag = re.findall(r'<(.*?)\s*>', line)
-        if start_tag and start_tag[0] == 'page':       # TODO better solution for encapsulating tag
+        if start_tag and start_tag[0] == 'page':
             start_tag = start_tag[0]
             file_strio = StringIO()
             file_strio.write(line)

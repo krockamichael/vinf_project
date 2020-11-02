@@ -3,6 +3,7 @@ from parsing.wrappers import prettify
 
 out_path = '../data/final_xml_RESULT.xml'
 final_topic = 'final_topic'
+
 consumer = KafkaConsumer(final_topic,
                          group_id='final',
                          bootstrap_servers='localhost:9092',

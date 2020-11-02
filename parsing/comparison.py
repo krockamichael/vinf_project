@@ -62,11 +62,11 @@ if __name__ == '__main__':
                         elif root.tag == 'player':
                             # first player
                             if root.attrib['name'] == player_ONE:
-                                for child in root:  # child --> youth / senior / national
+                                for child in root:  # child --> youth / senior / national ( club.name (years.text), club.name (years.text), ... )
                                     update_player_list(child, list_ONE, list_TWO)
                             # second player
                             elif root.attrib['name'] == player_TWO:
-                                for child in root:  # child --> youth / senior / national
+                                for child in root:  # child --> youth / senior / national ( club.name (years.text), club.name (years.text), ... )
                                     update_player_list(child, list_TWO, list_ONE)
                         ### LOGIC END ###
                         break

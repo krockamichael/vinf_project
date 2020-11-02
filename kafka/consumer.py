@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 
 topic = 'vinf'
 final_topic = 'final_topic'
+
 consumer = KafkaConsumer(topic,
                          group_id='abc',
                          bootstrap_servers='localhost:9092',

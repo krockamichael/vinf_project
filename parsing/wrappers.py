@@ -106,27 +106,33 @@ def check_possibility(new_entry, other_player_list):
             if '–' in entry[2] and entry[2][-1] != '–':
                 entry_year_1, entry_year_2 = re.split('-', entry[2])
 
-                # a <= x <= b
-                if int(entry_year_1) <= int(year_1) <= int(entry_year_2):
-                    # TODO something better
-                    print('They played together.')
+                if entry_year_1 != '' and entry_year_2 != '':
+                    # a <= x <= b
+                    if int(entry_year_1) <= int(year_1) <= int(entry_year_2):
+                        # TODO something better
+                        print('They played together.')
+                        print(club_type + '\t' + club_name)
 
-                # x <= a <= y
-                elif int(year_1) <= int(entry_year_1) <= int(year_2):
-                    print('They played together.')
+                    # x <= a <= y
+                    elif int(year_1) <= int(entry_year_1) <= int(year_2):
+                        print('They played together.')
+                        print(club_type + '\t' + club_name)
 
             # xxxx
             elif len(entry[2]) == 4:
                 entry_year_1 = entry[2]
 
-                # a == x  OR a == y
-                if int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
-                    print('They played together.')
-
-                # x <= a <= y
-                if year_2 is not None:
-                    if int(year_1) <= int(entry_year_1) <= int(year_2):
+                if year_1 != '' and year_2 != '':
+                    # a == x  OR a == y
+                    if int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
                         print('They played together.')
+                        print(club_type + '\t' + club_name)
+
+                    # x <= a <= y
+                    if year_2 is not None:
+                        if int(year_1) <= int(entry_year_1) <= int(year_2):
+                            print('They played together.')
+                            print(club_type + '\t' + club_name)
 
             # xxxx-
             elif entry[2][-1] == '-':
@@ -134,18 +140,21 @@ def check_possibility(new_entry, other_player_list):
 
                 if new_entry[2][-1] == '-':
                     print('They played together.')
+                    print(club_type + '\t' + club_name)
 
                 elif int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
                     print('They played together.')
+                    print(club_type + '\t' + club_name)
 
                 elif year_2 is not None:
                     if int(year_1) <= int(entry_year_1) <= int(year_2):
                         print('They played together.')
+                        print(club_type + '\t' + club_name)
 
 
 def update_player_list(root_, player_list, other_player_list):
     # xml element format --> youth / senior / national ( club.name (years.text), club.name (years.text), ... )
-    # list format --> club_name, years, type
+    # list format --> club_type, club_name, years
     for child_ in root_:
         temp_list = list()
         temp_list.append(root_.tag)              # youth / senior / national
