@@ -1,9 +1,7 @@
 from parsing.wrappers import player_xml_tree, club_xml_tree
 from xml.etree.ElementTree import Element
-import xml.etree.ElementTree as ET
 from difflib import SequenceMatcher
 from unidecode import unidecode
-from typing import Tuple
 import regex
 import re
 
@@ -165,35 +163,6 @@ def parse_table_senior(text, team_name) -> Element or None:
 
 
 """
-{{football squad on pitch
-TODO check what year --> | caption
-"""
-
-"""
-===Barcelona B and Youth Academy===
-{{main|FC Barcelona B|FC Barcelona (youth)}}
-{{Fs start}}
-{{Fs
-"""
-
-"""
-MATCH structure:
-
-    <career>
-        <club>
-            <player_name>ALEXANDER</player_name>
-            <club_name>xxx</club_name>
-            <years>yyy</years>
-            <type>zzz</type>
-        </club>
-        <club>
-            <player_name>JONATHAN</player_name>
-            ...
-        </club>
-    </career>
-"""
-
-"""
 <player name="Michael Essien">
   <youth>
     <club name="Liberty Professionals F.C.">
@@ -215,11 +184,11 @@ MATCH structure:
 
 """
 <club name="FC Barcelona">
-  <youth year="2020">
-    <player>johny</player>
-  </youth>
   <senior year="2020">
-    <player>cash</player>
+    <player>johny</player>
   </senior>
+  <national year="2020">
+    <player>cash</player>
+  </national>
 </club>
 """

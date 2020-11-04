@@ -18,7 +18,7 @@ if __name__ == '__main__':
             if len(self_enclosed_tag) > 0:
                 continue
 
-            start_tag = re.findall(r'<(.*?)\s', line)
+            start_tag = re.findall(r'<(.*?)\s', line)   # TODO better regex, what if no attrib
             if start_tag:  # TODO solution for encapsulating tag
                 start_tag = start_tag[0]
                 file_strio = StringIO()

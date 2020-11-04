@@ -28,22 +28,6 @@ def write_to_xml_file(element: ET.Element, output_file):
     output_file.write('\n')
 
 
-# def append_to_xml_tree_Club_PName_CName_Years_Type(career_root, club_name, years, club_type, player_name):
-#     club = SubElement(career_root, 'club')
-#
-#     p_name = SubElement(club, 'player_name')
-#     p_name.text = player_name
-#
-#     c_name = SubElement(club, 'club_name')
-#     c_name.text = club_name
-#
-#     years_ = SubElement(club, 'years')
-#     years_.text = years
-#
-#     c_type = SubElement(club, 'type')
-#     c_type.text = club_type
-
-
 def player_xml_tree(player, club_name, years, club_type):
     # check if the player already has an entry for this
     # club type and if so append to it, if not create new
@@ -142,9 +126,10 @@ def check_possibility(new_entry, other_player_list):
                     print('They played together.')
                     print(club_type + '\t' + club_name)
 
-                elif int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
-                    print('They played together.')
-                    print(club_type + '\t' + club_name)
+                elif year_1 != '' and year_2 != '':
+                    if int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
+                        print('They played together.')
+                        print(club_type + '\t' + club_name)
 
                 elif year_2 is not None:
                     if int(year_1) <= int(entry_year_1) <= int(year_2):
