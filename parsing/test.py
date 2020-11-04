@@ -64,29 +64,28 @@ def main_parsing_logic(file_str_: StringIO) -> Element or None:
 
 
 if __name__ == '__main__':
-
     """parse 'result' file into final xml file"""
-    path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF/Projekt/result.xml'
-    temp_path = '../data/example_club_page.xml'
-    with open(temp_path, 'r', encoding='utf-8') as file:
-        for line in file:
-            start_tag = re.findall(r'<(.*?)\s*>', line)
-            if start_tag and start_tag[0] != 'pages':
-                start_tag = start_tag[0]
-                file_strio = StringIO()
-                file_strio.write(line)
-
-                for page_content_line in file:
-                    end_tag = re.findall(r'</(.*?)\s*>', page_content_line)
-                    if end_tag and end_tag[0] == start_tag:  # closing tag
-                        file_strio.write(page_content_line)
-                        break
-                    file_strio.write(page_content_line)
-
-            # we have one page in file_str
-            out_path = '../data/temp.xml'
-            with open(out_path, 'a', encoding='utf-8') as out_file:
-                result = main_parsing_logic(file_strio)
-                if result is not None:
-                    out_file.writelines(prettify(xml_string=ET.tostring(result, encoding='utf-8'))[23:-1])
-                    out_file.write('\n')
+    # path = 'C:/Users/krock/OneDrive/Documents/FIIT/Inžinier/1. Semester/VINF/Projekt/result.xml'
+    # temp_path = '../data/example_club_page.xml'
+    # with open(temp_path, 'r', encoding='utf-8') as file:
+    #     for line in file:
+    #         start_tag = re.findall(r'<(.*?)\s*>', line)
+    #         if start_tag and start_tag[0] != 'pages':
+    #             start_tag = start_tag[0]
+    #             file_strio = StringIO()
+    #             file_strio.write(line)
+    #
+    #             for page_content_line in file:
+    #                 end_tag = re.findall(r'</(.*?)\s*>', page_content_line)
+    #                 if end_tag and end_tag[0] == start_tag:  # closing tag
+    #                     file_strio.write(page_content_line)
+    #                     break
+    #                 file_strio.write(page_content_line)
+    #
+    #         # we have one page in file_str
+    #         out_path = '../data/temp.xml'
+    #         with open(out_path, 'a', encoding='utf-8') as out_file:
+    #             result = main_parsing_logic(file_strio)
+    #             if result is not None:
+    #                 out_file.writelines(prettify(xml_string=ET.tostring(result, encoding='utf-8'))[23:-1])
+    #                 out_file.write('\n')

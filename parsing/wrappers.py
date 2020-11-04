@@ -73,67 +73,92 @@ def club_xml_tree(club, club_type, year, player_names):
 def check_possibility(new_entry, other_player_list):
     club_type = new_entry[0]
     club_name = new_entry[1]
-
     year_1, year_2 = None, None
-    if '-' in new_entry[2]:
-        year_1, year_2 = re.split('-', new_entry[2])
-    elif len(new_entry[2]) == 4:
-        year_1 = new_entry[2]
-    elif new_entry[2][-1] == '-':
+
+    # new_entry year format: XXXX-
+    if new_entry[2][-1] == '-':
         year_1 = new_entry[2][:-1]
 
-    # x-y and a-b
+    # new_entry year format: XXXX-YYYY
+    elif '-' in new_entry[2]:
+        year_1, year_2 = re.split('-', new_entry[2])
+
+    # new_entry year format: XXXX
+    elif len(new_entry[2]) == 4:
+        year_1 = new_entry[2]
+
+    # new_entry year format: empty string
+    elif new_entry[2] == '':
+        return
+
     for entry in other_player_list:
         if entry[0] == club_type and entry[1] == club_name:
 
-            # xxxx-yyyy
-            if '–' in entry[2] and entry[2][-1] != '–':
+            # entry years are in XXXX- format
+            if entry[2][-1] == '-':
+                entry_year_1 = entry[2][:-1]
+
+                # new_entry years: XXXX- format
+                # both player are still playing for the team
+                if new_entry[2][-1] == '-':
+                    print(club_type + '\t' + club_name)
+
+                # new_entry years: XXXX-YYYY format
+                # entry_year_1 <= YYYY
+                elif year_2 is not None and year_2 != '':
+                    if int(entry_year_1) <= int(year_2):
+                        print(club_type + '\t' + club_name)
+
+                # new_entry years: XXXX format
+                # entry_year_1 <= XXXX
+                elif int(entry_year_1) <= int(year_1):
+                    print(club_type + '\t' + club_name)
+
+            # entry years: XXXX-YYYY format
+            elif '–' in entry[2]:
                 entry_year_1, entry_year_2 = re.split('-', entry[2])
 
-                if entry_year_1 != '' and entry_year_2 != '':
-                    # a <= x <= b
-                    if int(entry_year_1) <= int(year_1) <= int(entry_year_2):
-                        # TODO something better
-                        print('They played together.')
-                        print(club_type + '\t' + club_name)
+                if entry_year_2 is not None and entry_year_2 != '':
+                    # new_entry years: XXXX- format
+                    # XXXX <= entry_year_2
+                    if new_entry[2][-1] == '-':
+                        if int(year_1) <= int(entry_year_2):
+                            print(club_type + '\t' + club_name)
 
-                    # x <= a <= y
-                    elif int(year_1) <= int(entry_year_1) <= int(year_2):
-                        print('They played together.')
-                        print(club_type + '\t' + club_name)
+                    # new_entry years: XXXX-YYYY format
+                    # both player are still playing for the team
+                    if year_2 is not None and year_2 != '':
 
-            # xxxx
+                        # new_entry years: XXXX format or XXXX-YYYY format
+                        # entry_year_1 <= XXXX <= entry_year_2
+                        if int(entry_year_1) <= int(year_1) <= int(entry_year_2):
+                            print(club_type + '\t' + club_name)
+
+                        # new_entry years: XXXX-YYYY format
+                        # XXXX <= entry_year_1 <= YYYYY
+                        elif int(year_1) <= int(entry_year_1) <= int(year_2):
+                            print(club_type + '\t' + club_name)
+
+            # entry years: XXXX format
             elif len(entry[2]) == 4:
                 entry_year_1 = entry[2]
 
-                if year_1 != '' and year_2 != '':
-                    # a == x  OR a == y
-                    if int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
-                        print('They played together.')
-                        print(club_type + '\t' + club_name)
-
-                    # x <= a <= y
-                    if year_2 is not None:
-                        if int(year_1) <= int(entry_year_1) <= int(year_2):
-                            print('They played together.')
-                            print(club_type + '\t' + club_name)
-
-            # xxxx-
-            elif entry[2][-1] == '-':
-                entry_year_1 = entry[2][:-1]
-
+                # new_entry years: XXXX- format
+                # XXXX <= entry_year_1
                 if new_entry[2][-1] == '-':
-                    print('They played together.')
-                    print(club_type + '\t' + club_name)
-
-                elif year_1 != '' and year_2 != '':
-                    if int(entry_year_1) == int(year_1) or int(entry_year_1) == int(year_2):
-                        print('They played together.')
+                    if int(year_1) <= int(entry_year_1):
                         print(club_type + '\t' + club_name)
 
-                elif year_2 is not None:
+                # new_entry years: XXXX format
+                # XXXX == XXXX
+                elif len(new_entry[2]) == 4:
+                    if int(entry_year_1) == int(year_1):
+                        print(club_type + '\t' + club_name)
+
+                # new_entry years: XXXX-YYYY format
+                # XXXX <= entry_year_1 <= YYYY
+                elif year_2 is not None and year_2 != '':
                     if int(year_1) <= int(entry_year_1) <= int(year_2):
-                        print('They played together.')
                         print(club_type + '\t' + club_name)
 
 
