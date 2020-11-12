@@ -89,3 +89,8 @@ if __name__ == '__main__':
     #             if result is not None:
     #                 out_file.writelines(prettify(xml_string=ET.tostring(result, encoding='utf-8'))[23:-1])
     #                 out_file.write('\n')
+
+    dict_temp = {}
+    dict_temp['noise'] = [5]
+    dict_temp['noise'].extend([8])
+    print('a')

@@ -3,7 +3,7 @@ from parsing.text_parsing import *
 from parsing.wrappers import get_xml_title, get_xml_text
 import xml.etree.ElementTree as ET
 
-topic = 'vinf'
+topic = 'multvinf'
 final_topic = 'final_topic'
 
 consumer = KafkaConsumer(topic,
@@ -30,5 +30,6 @@ for message in consumer:
 
     # MATCH is an element containing information about football club / player
     if MATCH is not None:
+        print(page_title)
         producer = KafkaProducer(bootstrap_servers='localhost:9092')
         producer.send(topic=final_topic, value=ET.tostring(MATCH, encoding='utf-8'))

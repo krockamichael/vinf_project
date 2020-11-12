@@ -59,7 +59,8 @@ def is_football_player(text, title) -> bool:
         short_summary_string = short_summary_string[0].lower()
 
         if 'football player' in short_summary_string or 'footballer' in short_summary_string:
-            return True
+            if 'american football' not in short_summary_string:
+                return True
 
     elif 'footballer' in title.lower():
         return True

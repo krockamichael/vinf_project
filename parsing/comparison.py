@@ -1,16 +1,19 @@
 from parsing.wrappers import check_possibility, update_player_list
 import xml.etree.ElementTree as ET
 from io import StringIO
+from time import time
 import re
 
 
 if __name__ == '__main__':
+    start_time = time()
+
     player_ONE = 'Lionel Messi'
     player_TWO = 'Philippe Coutinho'
     list_ONE = list()
     list_TWO = list()
 
-    path = '../data/final_xml_RESULT.xml'
+    path = '../data/final_xml_new.xml'
 
     with open(path, 'r', encoding='utf-8') as file:
         for line in file:
@@ -71,3 +74,4 @@ if __name__ == '__main__':
                         ### LOGIC END ###
                         break
                     file_strio.write(page_content_line)
+    print("--- %.2f seconds ---" % (time() - start_time))
