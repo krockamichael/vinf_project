@@ -1,3 +1,4 @@
+from parsing.text_parsing import is_footballer_name, name_correction
 from parsing.wrappers import check_possibility, update_player_list
 import xml.etree.ElementTree as ET
 from io import StringIO
@@ -9,14 +10,20 @@ import re
 if __name__ == '__main__':
     start_time = time()
     index_dict = json.load(open('..\data\index.json', 'r', encoding='utf-8'))
-    player_ONE = 'Lionel Messi'
-    player_TWO = 'Philippe Coutinho'
+
+    player_ONE = 'lionel messi'
+    # Paul Mucureezi
+    player_TWO = 'philippe coutinho'
+    # Mustafa Kizza
+
+    player_ONE = name_correction(player_ONE, index_dict)
+    player_TWO = name_correction(player_TWO, index_dict)
+
     list_ONE = list()
     list_TWO = list()
 
     path = '../data/final_xml_new.xml'
     counter = 0
-    temp = 0
 
     with open(path, 'r', encoding='utf-8') as file:
         for i, line in enumerate(file):
@@ -48,7 +55,7 @@ if __name__ == '__main__':
                                 club_name = root.attrib['name']
                                 for child in root:
                                     for g_child in child:
-                                        if g_child.text == player_ONE:
+                                        if is_footballer_name(g_child.text, player_ONE):
                                             temp_list = list()
                                             temp_list.append(child.tag)  # youth / senior / national
                                             temp_list.append(club_name)  # club name
@@ -58,7 +65,7 @@ if __name__ == '__main__':
                                                 if len(list_TWO) > 0:
                                                     check_possibility(temp_list, list_TWO)
 
-                                        elif g_child.text == player_TWO:
+                                        elif is_footballer_name(g_child.text, player_TWO):
                                             temp_list = list()
                                             temp_list.append(child.tag)  # youth / senior / national
                                             temp_list.append(club_name)  # club name
@@ -71,11 +78,11 @@ if __name__ == '__main__':
                             # PLAYER
                             elif root.tag == 'player':
                                 # first player
-                                if root.attrib['name'] == player_ONE:
+                                if is_footballer_name(root.attrib['name'], player_ONE):
                                     for child in root:  # child --> youth / senior / national ( club.name (years.text), club.name (years.text), ... )
                                         update_player_list(child, list_ONE, list_TWO)
                                 # second player
-                                elif root.attrib['name'] == player_TWO:
+                                elif is_footballer_name(root.attrib['name'], player_TWO):
                                     for child in root:  # child --> youth / senior / national ( club.name (years.text), club.name (years.text), ... )
                                         update_player_list(child, list_TWO, list_ONE)
                             ### LOGIC END ###

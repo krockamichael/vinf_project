@@ -1,4 +1,9 @@
-from parsing.text_parsing import is_football_player, parse_infobox, is_football_club, parse_table_senior
+from difflib import SequenceMatcher
+
+from unidecode import unidecode
+
+from parsing.text_parsing import is_football_player, parse_infobox, is_football_club, parse_table_senior, \
+    is_footballer_name
 from parsing.wrappers import prettify, get_xml_title, get_xml_text
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
@@ -90,7 +95,4 @@ if __name__ == '__main__':
     #                 out_file.writelines(prettify(xml_string=ET.tostring(result, encoding='utf-8'))[23:-1])
     #                 out_file.write('\n')
 
-    dict_temp = {}
-    dict_temp['noise'] = [5]
-    dict_temp['noise'].extend([8])
-    print('a')
+    print(is_footballer_name('Lionel Messi', 'lionelmesi'))

@@ -6,6 +6,21 @@ import regex
 import re
 
 
+def name_correction(name, name_dictionary):
+    if re.search('\(.*\)', name):
+        title = re.split('\(', name)[0]
+
+    # replace language specific characters (ľščťžýáíéúäôň...) with English characters
+    name = unidecode(name).lower().strip()
+
+    for key in name_dictionary:
+        temp_key = unidecode(key).lower().strip()
+        if SequenceMatcher(None, name, temp_key).ratio() > 0.9:
+            return key
+
+    return None
+
+
 # def load_top_football_clubs() -> Tuple[list, list, list, list, list]:
 #     with open('../data/top_team_names.txt', 'r', encoding='utf-8') as f:
 #         # file format: league name, club names, empty line
@@ -33,20 +48,17 @@ import re
 #         return False
 
 
-def is_footballer_name(name1, name2, title) -> bool:
+def is_footballer_name(name, title) -> bool:
     # check if title contains () and if so remove them
     if re.search('\(.*\)', title):
         title = re.split('\(', title)[0]
 
     # replace language specific characters (ľščťžýáíéúäôň...) with English characters
-    name1 = unidecode(name1).lower().strip()
-    name2 = unidecode(name2).lower().strip()
+    name1 = unidecode(name).lower().strip()
     title = unidecode(title).lower().strip()
 
     # use sequence matcher to calculate the similarity of two strings
     if SequenceMatcher(None, name1, title).ratio() > 0.9:
-        return True
-    elif SequenceMatcher(None, name2, title).ratio() > 0.9:
         return True
     else:
         return False

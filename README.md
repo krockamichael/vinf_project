@@ -10,6 +10,9 @@ kafka/server - kafka prerequisites, zookeeper and kafka server (start in this or
 kafka - consumer, final_consumer and producer source code
 
 parsing
-- testing contains majority of application logic for parsing wikipedia pages
-- parsing teams is a script to parse teams from top 5 leagues into a dataframe in the form [player_name, club_name, club_type (youth, senior, national)]
-- input_file is a script for parsing enwiki-latest-pages-articles to produce a resulting file which contains pages about football  
+- comparison.py - script for comparing two players if they played in the same team
+- comparison_index.py - script for comparing two players if the played in the same team, using index
+- indexing.py - script for generating index.json, inverted index
+- test.py - file for testing new solutions
+- text_parsing.py - functions for parsing data from text (from infobox, from senior squad tables)
+- wrappers.py - helper functions for comparison and data retrieval
